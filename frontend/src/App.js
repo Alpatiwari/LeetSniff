@@ -1,4 +1,4 @@
-// App.js - FIXED VERSION
+// App.js - Updated with Environment Variables
 import { useState, useCallback, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
@@ -11,6 +11,9 @@ import AboutPage from './pages/About';
 import SignUp from './SignUp';
 import Dashboard from './pages/Dashboard';
 import './App.css';
+
+// Environment variable configuration
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://leetsniff.onrender.com';
 
 function HomePage({ query, setQuery, onSearch }) {
   return (
@@ -187,7 +190,7 @@ function AppContent() {
     }
   }, [location.pathname, location.search, hasExecutedInitialSearch]);
 
-  // FIXED: Separated search execution logic
+  // FIXED: Separated search execution logic with environment variable
   const executeSearch = useCallback(async (searchQuery) => {
     if (!searchQuery || !searchQuery.trim()) return;
     
@@ -199,13 +202,14 @@ function AppContent() {
     searchExecutedRef.current = searchQuery;
     
     console.log('🔍 Executing search for:', searchQuery);
+    console.log('🌐 Backend URL:', BACKEND_URL);
     
     setIsLoading(true);
     setError(null);
     setResults([]);
 
     try {
-      const res = await axios.get(`https://leetsniff.onrender.com/search?q=${encodeURIComponent(searchQuery)}`);
+      const res = await axios.get(`${BACKEND_URL}/search?q=${encodeURIComponent(searchQuery)}`);
       console.log('✅ Search results received:', res.data?.length || 0, 'items');
       setResults(res.data || []);
     } catch (err) {
@@ -240,7 +244,7 @@ function AppContent() {
     await executeSearch(trimmedQuery);
   }, [query, navigate, location.pathname, location.search, executeSearch]);
 
-  // Auth and user management (unchanged)
+  // Auth and user management with environment variable
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem('user');
@@ -267,7 +271,7 @@ function AppContent() {
 
   useEffect(() => {
     if (!currentUser && isUserLoaded) {
-      axios.get('https://leetsniff.onrender.com/auth/user', { withCredentials: true })
+      axios.get(`${BACKEND_URL}/auth/user`, { withCredentials: true })
         .then(res => {
           if (res.data?.user) {
             setCurrentUser(res.data.user);
@@ -280,7 +284,7 @@ function AppContent() {
 
   const handleLogout = useCallback(async () => {
     try {
-      await axios.post('https://leetsniff.onrender.com/auth/logout', {}, { withCredentials: true });
+      await axios.post(`${BACKEND_URL}/auth/logout`, {}, { withCredentials: true });
     } catch {}
     setCurrentUser(null);
     localStorage.removeItem('user');

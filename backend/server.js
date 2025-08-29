@@ -112,6 +112,21 @@ app.get('/auth/failure', (req, res) => res.redirect(`${process.env.FRONTEND_URL}
 const searchRouter = require('./api/search');
 app.use('/api', searchRouter);
 
+// Fix for frontend calling wrong routes - add these exact routes
+app.get('/search', async (req, res) => {
+  // Redirect to proper API endpoint
+  const queryString = req.url.includes('?') ? req.url.split('?')[1] : '';
+  res.redirect(`/api/search?${queryString}`);
+});
+
+app.get('/auth/user', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json(req.user);
+  } else {
+    res.status(401).json({ error: 'Not authenticated' });
+  }
+});
+
 // Additional API Routes
 app.get('/api/test', (req, res) => {
   res.json({ 
@@ -123,7 +138,7 @@ app.get('/api/test', (req, res) => {
   });
 });
 
-// User info route
+// User info route (also available at /api/user)
 app.get('/api/user', (req, res) => {
   if (req.isAuthenticated()) {
     res.json(req.user);
