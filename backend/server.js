@@ -1,6 +1,5 @@
 // Load environment variables
 require('dotenv').config();
-
 const express = require('express');
 const passport = require('passport');
 const GitHubStrategy = require('passport-github2').Strategy;
@@ -10,7 +9,7 @@ const cors = require('cors');
 const axios = require('axios');
 
 console.log('Environment variables check:');
-['GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'RAPIDAPI_KEY']
+['GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'RAPIDAPI_KEY', 'BACKEND_URL', 'FRONTEND_URL']
   .forEach(key => console.log(`${key}:`, process.env[key] ? 'Set' : 'Not set'));
 console.log('PORT:', process.env.PORT);
 
@@ -21,9 +20,7 @@ app.use(cors({
   origin: process.env.FRONTEND_URL,
   credentials: true
 }));
-
 app.use(express.json());
-
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
@@ -33,7 +30,6 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000
   }
 }));
-
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -94,10 +90,10 @@ passport.use(new GoogleStrategy({
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
 
-// Routes
+// Basic Routes
 app.get('/', (req, res) => res.json({ message: 'OAuth Server Running' }));
 
-// Example Auth Routes (GitHub + Google)
+// Auth Routes (GitHub + Google)
 app.get('/auth/github', passport.authenticate('github', { scope: ['user:email', 'read:user'] }));
 app.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/auth/failure' }), (req, res) => {
   const frontendUrl = process.env.FRONTEND_URL;
@@ -112,10 +108,58 @@ app.get('/auth/google/callback', passport.authenticate('google', { failureRedire
 
 app.get('/auth/failure', (req, res) => res.redirect(`${process.env.FRONTEND_URL}/?auth=error`));
 
+// Import and use your existing search router
+const searchRouter = require('./api/search');
+app.use('/api', searchRouter);
+
+// Additional API Routes
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    message: 'API is working', 
+    timestamp: new Date(),
+    rapidApiKey: process.env.RAPIDAPI_KEY ? 'Set' : 'Not set',
+    backendUrl: process.env.BACKEND_URL,
+    frontendUrl: process.env.FRONTEND_URL
+  });
+});
+
+// User info route
+app.get('/api/user', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json(req.user);
+  } else {
+    res.status(401).json({ error: 'Not authenticated' });
+  }
+});
+
+// Logout route
+app.post('/api/logout', (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Logout failed' });
+    }
+    res.json({ message: 'Logged out successfully' });
+  });
+});
+
+// Error handling middleware
+app.use((error, req, res, next) => {
+  console.error('Global error handler:', error);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+// 404 handler for unmatched routes
+app.use((req, res) => {
+  console.log('404 - Route not found:', req.method, req.path);
+  res.status(404).json({ error: 'Route not found' });
+});
+
 // Start Server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`Backend URL: ${process.env.BACKEND_URL}`);
+  console.log(`Frontend URL: ${process.env.FRONTEND_URL}`);
 });
 
 module.exports = app;
