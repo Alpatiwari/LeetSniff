@@ -3,7 +3,7 @@ import React from 'react';
 
 const SignInWithGithub = () => {
   const handleLogin = () => {
-    window.location.href = 'http://localhost:3001/auth/github/callback';
+    window.location.href = 'https://leetsniff.onrender.com/auth/github/callback';
   };
 
   return (

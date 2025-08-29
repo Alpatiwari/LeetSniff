@@ -205,7 +205,7 @@ function AppContent() {
     setResults([]);
 
     try {
-      const res = await axios.get(`http://localhost:3001/search?q=${encodeURIComponent(searchQuery)}`);
+      const res = await axios.get(`https://leetsniff.onrender.com/search?q=${encodeURIComponent(searchQuery)}`);
       console.log('✅ Search results received:', res.data?.length || 0, 'items');
       setResults(res.data || []);
     } catch (err) {
@@ -267,7 +267,7 @@ function AppContent() {
 
   useEffect(() => {
     if (!currentUser && isUserLoaded) {
-      axios.get('http://localhost:3001/auth/user', { withCredentials: true })
+      axios.get('https://leetsniff.onrender.com/auth/user', { withCredentials: true })
         .then(res => {
           if (res.data?.user) {
             setCurrentUser(res.data.user);
@@ -280,7 +280,7 @@ function AppContent() {
 
   const handleLogout = useCallback(async () => {
     try {
-      await axios.post('http://localhost:3001/auth/logout', {}, { withCredentials: true });
+      await axios.post('https://leetsniff.onrender.com/auth/logout', {}, { withCredentials: true });
     } catch {}
     setCurrentUser(null);
     localStorage.removeItem('user');

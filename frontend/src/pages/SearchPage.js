@@ -38,7 +38,7 @@ function SearchPage() {
     setError(null);
 
     try {
-        const res = await axios.get(`http://localhost:3001/search?q=${encodeURIComponent(searchQuery)}`);
+        const res = await axios.get(`https://leetsniff.onrender.com/search?q=${encodeURIComponent(searchQuery)}`);
         console.log('Search results:', res.data);
         setResults(res.data);
       } catch (err) {

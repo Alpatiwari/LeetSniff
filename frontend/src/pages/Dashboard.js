@@ -25,7 +25,7 @@ const Dashboard = () => {
 
       // If no stored user, check with backend session
       try {
-        const res = await fetch('http://localhost:3001/auth/user', {
+        const res = await fetch('https://leetsniff.onrender.com/auth/user', {
           credentials: 'include'
         });
         
@@ -53,7 +53,7 @@ const Dashboard = () => {
 
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost:3001/auth/logout', {
+      await fetch('https://leetsniff.onrender.com/auth/logout', {
         method: 'POST',
         credentials: 'include'
       });
